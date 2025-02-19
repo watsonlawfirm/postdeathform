@@ -1,0 +1,94 @@
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
+export default function ConsultationBot() {
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState({});
+
+  const questions = [
+    {
+      text: "Did the deceased have a will?",
+      options: ["Yes", "No", "Not sure"],
+    },
+    {
+      text: "Did the deceased own real estate in Texas?",
+      options: ["Yes", "No", "Not sure"],
+    },
+    {
+      text: "Are there disputes among heirs or beneficiaries?",
+      options: ["Yes", "No", "Not sure"],
+    },
+    {
+      text: "Did the deceased have debts that creditors are trying to collect?",
+      options: ["Yes", "No", "Not sure"],
+    },
+    {
+      text: "Has probate already been started?",
+      options: ["Yes", "No", "Not sure"],
+    },
+  ];
+
+  const handleAnswer = (answer) => {
+    setAnswers({ ...answers, [step]: answer });
+    if (step + 1 < questions.length) {
+      setStep(step + 1);
+    } else {
+      evaluateOutcome();
+    }
+  };
+
+  const evaluateOutcome = () => {
+    const { 0: will, 1: realEstate, 2: disputes, 3: debts, 4: probate } = answers;
+    
+    if (disputes === "Yes" || debts === "Yes" || !will && realEstate === "Yes") {
+      return setStep("consult");
+    }
+    if (!will && realEstate === "No" && disputes === "No" && debts === "No") {
+      return setStep("noConsult");
+    }
+    return setStep("maybeConsult");
+  };
+
+  return (
+    <Card className="p-4 max-w-md mx-auto mt-10 text-center">
+      <CardContent>
+        {typeof step === "number" ? (
+          <div>
+            <p className="text-lg font-semibold mb-4">{questions[step].text}</p>
+            {questions[step].options.map((option) => (
+              <Button
+                key={option}
+                className="block w-full mb-2"
+                onClick={() => handleAnswer(option)}
+              >
+                {option}
+              </Button>
+            ))}
+          </div>
+        ) : step === "consult" ? (
+          <div>
+            <p className="text-lg font-semibold mb-4">It looks like you may need legal assistance.</p>
+            <p>Based on your responses, a consultation with our firm is recommended. Click below to schedule an appointment.</p>
+            <Button className="mt-4 w-full bg-blue-600 text-white" onClick={() => window.location.href='https://watsonlawfirm.as.me/new-client-consultation'}>
+              Schedule Consultation
+            </Button>
+          </div>
+        ) : step === "noConsult" ? (
+          <div>
+            <p className="text-lg font-semibold mb-4">You may not need a consultation.</p>
+            <p>It seems like your issue might be resolved without legal intervention. However, if you have further concerns, feel free to contact us.</p>
+          </div>
+        ) : (
+          <div>
+            <p className="text-lg font-semibold mb-4">You might benefit from legal guidance.</p>
+            <p>Depending on certain factors, legal assistance may be needed. If you have any doubts, scheduling a consultation can clarify your situation.</p>
+            <Button className="mt-4 w-full bg-blue-600 text-white" onClick={() => window.location.href='https://watsonlawfirm.as.me/new-client-consultation'}>
+              Schedule Consultation
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
